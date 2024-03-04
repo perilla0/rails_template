@@ -1,0 +1,98 @@
+
+version: '3.9'
+
+services:
+
+  app:
+    container_name: app
+    hostname: app
+    image: ${PROJECT_NAME}_app
+    build:
+      context: ./docker/app
+      dockerfile: Dockerfile
+      args:
+        RUBY_VERSION: ${RUBY_VERSION}
+        RAILS_VERSION: ${RAILS_VERSION}
+        MYSQL_VERSION: ${MYSQL_VERSION}
+    command: rails server -b 0.0.0.0 -p 3000
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - type: bind
+        source: ./src
+        target: /app/src
+    networks:
+      backend:
+    ports:
+      - 3000:3000
+
+  web:
+    container_name: web
+    hostname: web
+    image: ${PROJECT_NAME}_web
+    build:
+      context: ./docker/web
+      dockerfile: Dockerfile
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - type: bind
+        source: ./frontend
+        target: /var/www
+      - type: bind
+        source: ./docker/web/conf.d
+        target: /etc/nginx/conf.d
+    depends_on:
+      - app
+    ports:
+      - 80:80
+    networks:
+      backend:
+
+  db_mysql:
+    container_name: db_mysql
+    hostname: db_mysql
+    image: ${PROJECT_NAME}_db_mysql
+    build:
+      context: ./docker/db_mysql
+      dockerfile: Dockerfile
+    environment:
+      TZ: ${TZ}
+      MYSQL_DATABASE: main
+      MYSQL_ROOT_PASSWORD: password
+    volumes:
+      - type: bind
+        source: ./docker/db_mysql/conf.d
+        target: /etc/my.cnf.d/
+      - type: bind
+        source: ./docker/db_mysql/initdb.d
+        target: /docker-entrypoint-initdb.d
+      - type: volume
+        source: db-mysql-data
+        target: /var/lib/mysql
+    ports:
+      - 3306:3306
+    networks:
+      backend:
+
+  db_mysql_admin:
+    container_name: db_mysql_admin
+    hostname: db_mysql_admin
+    image: phpmyadmin:5.2
+    depends_on:
+      - db_mysql
+    ports:
+      - 8091:80
+    environment:
+      PMA_HOSTS: db_mysql
+      PMA_ARBITRARY: -1
+    networks:
+      backend:
+
+volumes:
+  db-mysql-data:
+
+networks:
+  backend:
+    name: ${PROJECT_NAME}_backend
+    driver: bridge
