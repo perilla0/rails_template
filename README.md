@@ -3,6 +3,7 @@
   - [1.2. DB設定ファイル編集](#12-db設定ファイル編集)
   - [1.3. コンテナ立ち上げ](#13-コンテナ立ち上げ)
   - [1.4. すべてのコンテナとボリュームを削除](#14-すべてのコンテナとボリュームを削除)
+- [Qiita記事](#qiita記事)
 
 
 # 1. このプロジェクトについて
@@ -59,3 +60,8 @@ docker compose up
 cd script
 ./down_clear.sh
 ```
+
+# Qiita記事
+
+[Ruby] Rails+NginxのDockerCompose環境  
+https://qiita.com/perilla/items/fa2ca603b2a48f16413c
